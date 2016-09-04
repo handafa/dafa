@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dafa.role.mapper.RoleMenuMapper">
+	<resultMap id="BaseResultMap" type="cn.dafa.role.model.RoleMenu">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="role_id" jdbcType="INTEGER" property="roleId" />
+		<result column="role_name" jdbcType="VARCHAR" property="roleName" />
+		<result column="menu_id" jdbcType="INTEGER" property="menuId" />
+		<result column="menu_name" jdbcType="VARCHAR" property="menuName" />
+		<result column="father_node" jdbcType="INTEGER" property="fatherNode" />
+		<result column="if_father" jdbcType="INTEGER" property="ifFather" />
+		<result column="checked" jdbcType="INTEGER" property="checked" />
+		<result column="status" jdbcType="INTEGER" property="status" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="creater" jdbcType="VARCHAR" property="creater" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+		<result column="updater" jdbcType="VARCHAR" property="updater" />
+		<result column="btn_id" jdbcType="VARCHAR" property="btnId" />
+		<result column="btn_name" jdbcType="VARCHAR" property="btnName" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		a.id, a.role_id,b.role_name, a.menu_id,c.name as menu_name,
+		a.status, a.create_time,
+		a.creater, a.update_time, a.updater
+	</sql>
+
+	<sql id="Base_Table_list">
+		from t_sys_role_menus a,t_sys_roles b,t_sys_menus c where
+		a.role_id = b.id and a.menu_id = c.id
+	</sql>
+
+	<sql id="Sql_Where_Clause">
+		<choose>
+			<when test="condition.keyword!=null">
+				and ( b.role_name like '%' #{condition.keyword} '%'
+				or c.name like '%' #{condition.keyword} '%')
+			</when>
+		</choose>
+		group by a.role_id,a.menu_id order by b.weight,c.weight
+	</sql>
+
+	<select id="queryMenusByRole" resultMap="BaseResultMap"
+		parameterType="cn.dafa.role.model.RoleMenu" resultType="cn.dafa.role.model.RoleMenu">
+		SELECT a.id AS
+		menu_id, a.name AS menu_name,
+		a.father_node, a.if_father, ( SELECT b.id
+		FROM t_sys_role_menus b
+		WHERE b.role_id = #{roleId,jdbcType=INTEGER}
+		AND b.menu_id = a.id and  b.btn_id='' ) AS checked FROM
+		t_sys_menus a WHERE
+		a.father_node =#{fatherNode,jdbcType=INTEGER} ORDER BY a.weight;
+	</select>
+
+	<!-- 根据菜单查找按钮 -->
+	<select id="findBtnsByMenu" parameterType="cn.dafa.role.model.RoleMenu"
+		resultMap="BaseResultMap" resultType="cn.dafa.role.model.RoleMenu">
+		select
+		a.menu_id,a.btn_id,a.btn_name,
+		(select b.menu_id from t_sys_role_menus
+		b where b.role_id =
+		#{roleId,jdbcType=INTEGER} and b.menu_id =
+		#{menuId,jdbcType=INTEGER}
+		and b.btn_id = a.btn_id) as checked
+		from
+		t_sys_menu_btns a where a.menu_id
+		= #{menuId,jdbcType=INTEGER}
+	</select>
+
+	<select id="query" resultMap="BaseResultMap" parameterType="cn.dafa.common.pojo.Criteria"
+		resultType="cn.dafa.role.model.RoleMenu">
+		select distinct
+		<include refid="Base_Column_List" />
+		<include refid="Base_Table_list" />
+		<include refid="Sql_Where_Clause" />
+		LIMIT #{start,jdbcType=INTEGER},#{limit,jdbcType=INTEGER}
+	</select>
+
+	<select id="count" resultType="java.lang.Long" parameterType="cn.dafa.common.pojo.Criteria">
+		select count(1) from t_sys_roles
+		<include refid="Base_Table_list" />
+		<include refid="Sql_Where_Clause" />
+	</select>
+
+
+	<select id="select" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		<include refid="Base_Table_list" />
+		id = #{id,jdbcType=INTEGER}
+	</select>
+
+	<delete id="delete" parameterType="java.lang.Integer">
+		delete from
+		t_sys_role_menus
+		where id = #{id,jdbcType=INTEGER}
+	</delete>
+
+
+	<!-- 批量删除 -->
+	<delete id="deleteBatch" parameterType="java.lang.String">
+		delete from t_sys_role_menus where id in
+		<foreach item="ids" collection="array" open="(" separator=","
+			close=")">
+			#{ids}
+		</foreach>
+	</delete>
+
+	<!-- 根据角色进行删除 -->
+	<delete id="deleteMenusByRole" parameterType="java.lang.Integer">
+		delete from
+		t_sys_role_menus where role_id = #{roleId,jdbcType=INTEGER}
+	</delete>
+
+	<insert id="save" parameterType="cn.dafa.role.model.RoleMenu">
+		insert into t_sys_role_menus
+		(id, role_id, menu_id,btn_id,
+		status, create_time, creater,
+		update_time,
+		updater)
+		values (#{id,jdbcType=INTEGER},
+		#{roleId,jdbcType=INTEGER},
+		#{menuId,jdbcType=INTEGER},#{btnId,jdbcType=VARCHAR},
+		1,
+		now(),
+		#{creater,jdbcType=VARCHAR},
+		now(), #{updater,jdbcType=VARCHAR})
+	</insert>
+
+</mapper>

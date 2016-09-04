@@ -1,0 +1,12 @@
+#Sat Jan 19 14:57:17 CST 2013
+eclipse.preferences.version=1
+encoding//WebRoot/login.jsp=UTF-8
+encoding//config/log4j.properties=UTF-8
+encoding//src/cn/dafa/base/mapper/BaseMapper.java=UTF-8
+encoding//src/cn/dafa/base/model/BaseModel.java=UTF-8
+encoding//src/cn/dafa/base/service/BaseService.java=UTF-8
+encoding//src/cn/dafa/common/util/ExtHelper.java=UTF-8
+encoding//src/cn/dafa/common/util/TimeUtil.java=UTF-8
+encoding//src/cn/dafa/common/util/TotalJson.java=UTF-8
+encoding//src/cn/dafa/common/util/TotalXml.java=UTF-8
+encoding/<project>=UTF-8

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.dafa.user.mapper.UserMapper">
+	<resultMap id="BaseResultMap" type="cn.dafa.user.model.User">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="number" property="number" jdbcType="VARCHAR" />
+		<result column="user_name" property="userName" jdbcType="VARCHAR" />
+		<result column="login_name" property="loginName" jdbcType="VARCHAR" />
+		<result column="groupId" property="groupId" jdbcType="VARCHAR" />
+		<result column="groupName" property="groupName" jdbcType="VARCHAR" />
+		<result column="roleId" property="roleId" jdbcType="INTEGER" />
+		<result column="roleName" property="roleName" jdbcType="VARCHAR" />
+		<result column="password" property="password" jdbcType="VARCHAR" />
+		<result column="sex" property="sex" jdbcType="VARCHAR" />
+		<result column="age" property="age" jdbcType="INTEGER" />
+		<result column="birthday" property="birthday" jdbcType="DATE" />
+		<result column="degree" property="degree" jdbcType="VARCHAR" />
+		<result column="picture" property="picture" jdbcType="VARCHAR" />
+		<result column="mobile" property="mobile" jdbcType="VARCHAR" />
+		<result column="tel" property="tel" jdbcType="VARCHAR" />
+		<result column="qq" property="qq" jdbcType="VARCHAR" />
+		<result column="email" property="email" jdbcType="VARCHAR" />
+		<result column="entry_time" property="entryTime" jdbcType="DATE" />
+		<result column="note" property="note" jdbcType="VARCHAR" />
+		<result column="weight" property="weight" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="creater" property="creater" jdbcType="VARCHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="updater" property="updater" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, number, user_name, login_name,
+		roleId,groupId,password,sex, age,
+		birthday,
+		degree,
+		picture, mobile,
+		tel,
+		qq, email, entry_time,note,
+		weight,
+		status,
+		create_time, creater,
+		update_time,
+		updater
+	</sql>
+
+	<sql id="Sql_Where_Clause">
+		where status=1
+		<choose>
+			<when test="condition.keyword!=null">
+				and user_name like '%' #{condition.keyword} '%'
+			</when>
+		</choose>
+	</sql>
+
+	<select id="query" resultMap="BaseResultMap" resultType="cn.dafa.menu.model.Menu">
+		select
+		<include refid="Base_Column_List" />
+		from t_sys_users
+		<include refid="Sql_Where_Clause" />
+		LIMIT #{start,jdbcType=INTEGER},#{limit,jdbcType=INTEGER}
+	</select>
+
+	<select id="count" resultType="java.lang.Long" parameterType="cn.dafa.menu.model.Menu">
+		select count(1) from t_sys_users
+		<include refid="Sql_Where_Clause" />
+	</select>
+
+
+	<select id="select" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		select
+		a.id, a.number, a.user_name, a.login_name,
+		a.roleId,a.groupId,
+		(select b.group_name from t_sys_groups b where b.id=a.groupId ) as
+		groupName,
+		a.password,a.sex, a.age,
+		a.birthday,
+		a.degree,
+		a.picture,
+		a.mobile,
+		a.tel,
+		a.qq, a.email, a.entry_time,a.note,
+		a.weight,
+		a.status
+		from t_sys_users a
+		where a.id = #{id,jdbcType=INTEGER} and a.status=1
+		order by a.weight;
+	</select>
+
+	<delete id="delete" parameterType="java.lang.Integer">
+		delete from
+		t_sys_users
+		where id
+		= #{id,jdbcType=INTEGER}
+	</delete>
+
+	<delete id="deleteBatch" parameterType="java.lang.String">
+		delete from t_sys_users where id in
+		<foreach item="ids" collection="array" open="(" separator=","
+			close=")">
+			#{ids}
+		</foreach>
+	</delete>
+
+	<insert id="save" parameterType="cn.dafa.user.model.User">
+		insert into t_sys_users (id,
+		number, user_name,
+		login_name,groupId,roleId, password, sex,age,
+		birthday, degree,
+		picture,
+		mobile, tel, qq, email,entry_time,
+		note,
+		weight, status,
+		create_time,
+		creater,
+		update_time,
+		updater)
+		values
+		(#{id,jdbcType=INTEGER},
+		#{number,jdbcType=VARCHAR},
+		#{userName,jdbcType=VARCHAR},
+		#{loginName,jdbcType=VARCHAR},#{groupId,jdbcType=VARCHAR},#{roleId,jdbcType=INTEGER},
+		MD5(#{password,jdbcType=VARCHAR}),
+		#{sex,jdbcType=VARCHAR},
+		#{age,jdbcType=INTEGER},
+		#{birthday,jdbcType=DATE},
+		#{degree,jdbcType=VARCHAR},
+		#{picture,jdbcType=VARCHAR},
+		#{mobile,jdbcType=VARCHAR}, #{tel,jdbcType=VARCHAR},
+		#{qq,jdbcType=VARCHAR},
+		#{email,jdbcType=VARCHAR},#{entryTime,jdbcType=DATE},
+		#{note,jdbcType=VARCHAR}, #{weight,jdbcType=INTEGER},
+		1,
+		now(),
+		#{creater,jdbcType=VARCHAR},
+		now(),
+		#{updater,jdbcType=VARCHAR})
+	</insert>
+
+	<update id="modify" parameterType="cn.dafa.user.model.User">
+		update t_sys_users
+		<set>
+			<if test="number != null">
+				number = #{number,jdbcType=VARCHAR},
+			</if>
+			<if test="userName != null">
+				user_name = #{userName,jdbcType=VARCHAR},
+			</if>
+			<if test="loginName != null">
+				login_name = #{loginName,jdbcType=VARCHAR},
+			</if>
+			<if test="password != null">
+				password = #{password,jdbcType=VARCHAR},
+			</if>
+			<if test="groupId != null">
+				groupId = #{groupId,jdbcType=VARCHAR},
+			</if>
+			<if test="roleId != null">
+				roleId = #{roleId,jdbcType=INTEGER},
+			</if>
+			<if test="sex != null">
+				sex = #{sex,jdbcType=VARCHAR},
+			</if>
+			<if test="age != null">
+				age = #{age,jdbcType=INTEGER},
+			</if>
+			<if test="birthday != null">
+				birthday = #{birthday,jdbcType=DATE},
+			</if>
+			<if test="degree != null">
+				degree = #{degree,jdbcType=VARCHAR},
+			</if>
+			<if test="picture != null">
+				picture = #{picture,jdbcType=VARCHAR},
+			</if>
+			<if test="mobile != null">
+				mobile = #{mobile,jdbcType=VARCHAR},
+			</if>
+			<if test="tel != null">
+				tel = #{tel,jdbcType=VARCHAR},
+			</if>
+			<if test="qq != null">
+				qq = #{qq,jdbcType=VARCHAR},
+			</if>
+			<if test="email != null">
+				email = #{email,jdbcType=VARCHAR},
+			</if>
+			<if test="entryTime != null">
+				entry_time = #{entryTime,jdbcType=DATE},
+			</if>
+			<if test="note != null">
+				note = #{note,jdbcType=VARCHAR},
+			</if>
+			<if test="weight != null">
+				weight = #{weight,jdbcType=INTEGER},
+			</if>
+			<if test="status != null">
+				status = #{status,jdbcType=INTEGER},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="creater != null">
+				creater = #{creater,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = now(),
+			</if>
+			<if test="updater != null">
+				updater = #{updater,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<!-- 用户密码重置功能 -->
+	<update id="resetPassword" parameterType="java.lang.String">
+		update t_sys_users set
+		password = MD5('111111') where id = #{id,jdbcType=VARCHAR}
+	</update>
+	<!-- 用户密码重置功能 -->
+</mapper>

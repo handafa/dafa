@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.dafa.menu.mapper.MenuMapper">
+
+	<resultMap id="BaseResultMap" type="cn.dafa.menu.model.Menu">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+		<result column="url" property="url" jdbcType="VARCHAR" />
+		<result column="father_node" property="fatherNode" jdbcType="INTEGER" />
+		<result column="if_father" property="ifFather" jdbcType="INTEGER" />
+		<result column="weight" property="weight" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id, name, url, father_node, if_father, weight, status,
+		create_time,
+		update_time
+	</sql>
+
+	<sql id="Sql_Where_Clause">
+		where status=1
+		<choose>
+			<when test="name!=null">
+				and name like #{name,jdbcType=VARCHAR}
+			</when>
+			<when test="fatherNode!=null">
+				and father_node = #{fatherNode,jdbcType=INTEGER}
+			</when>
+		</choose>
+	</sql>
+
+	<select id="select" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		select
+		<include refid="Base_Column_List" />
+		from t_sys_menus
+		where id =
+		#{id,jdbcType=INTEGER}
+	</select>
+
+	<select id="query" resultMap="BaseResultMap" resultType="cn.dafa.menu.model.Menu">
+		select
+		<include refid="Base_Column_List" />
+		from t_sys_menus
+		<include refid="Sql_Where_Clause" />
+		LIMIT #{start,jdbcType=INTEGER},#{limit,jdbcType=INTEGER}
+	</select>
+
+	<select id="count" resultType="java.lang.Long" parameterType="cn.dafa.menu.model.Menu">
+		select count(1) from t_sys_menus
+		<include refid="Sql_Where_Clause" />
+	</select>
+
+	<delete id="delete" parameterType="java.lang.Integer">
+		delete from
+		t_sys_menus
+		where id
+		= #{id,jdbcType=INTEGER}
+	</delete>
+
+	<delete id="deleteBatch" parameterType="java.lang.String">
+		delete from
+		t_sys_menus
+		where id in (#{ids})
+	</delete>
+
+	<insert id="save" parameterType="cn.dafa.menu.model.Menu">
+		insert into t_sys_menus (id,
+		name,
+		url,
+		father_node, if_father, weight,
+		status, create_time,
+		update_time
+		)
+		values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR},
+		#{url,jdbcType=VARCHAR},
+		#{fatherNode,jdbcType=INTEGER},
+		0,
+		#{weight,jdbcType=INTEGER},
+		1,
+		now(),now())
+	</insert>
+
+	<update id="modify" parameterType="cn.dafa.menu.model.Menu">
+		update t_sys_menus
+		<set>
+			<if test="2 != 1">
+				update_time = now(),
+			</if>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="url != null">
+				url = #{url,jdbcType=VARCHAR},
+			</if>
+			<if test="fatherNode != null">
+				father_node = #{fatherNode,jdbcType=INTEGER},
+			</if>
+			<if test="ifFather != null">
+				if_father = #{ifFather,jdbcType=INTEGER},
+			</if>
+			<if test="weight != null">
+				weight = #{weight,jdbcType=INTEGER},
+			</if>
+			<if test="status != null">
+				status = #{status,jdbcType=INTEGER},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id = #{id,jdbcType=INTEGER}
+	</update>
+
+	<!-- 根据父节点查出所有的菜单 -->
+	<select id="findMenus" parameterType="java.lang.String"
+		resultMap="BaseResultMap" resultType="cn.dafa.menu.model.Menu">
+		select
+		<include refid="Base_Column_List" />
+		from t_sys_menus where status=1 and father_node = #{fatherNode}
+	</select>
+
+	<!-- 查出所有的菜单 -->
+	<select id="findAllMenus" resultMap="BaseResultMap" resultType="cn.dafa.menu.model.Menu">
+		select
+		<include refid="Base_Column_List" />
+		from t_sys_menus where status=1
+	</select>
+
+	<!-- 更改父节点的状态 -->
+	<update id="updateIfFather" parameterType="java.lang.Integer">
+		update t_sys_menus set
+		if_father = 1 where id = #{fatherNode,jdbcType=INTEGER}
+	</update>
+
+	<!-- 查询孩子的数目状态 -->
+	<select id="countChildrenNum" parameterType="java.lang.Integer"
+		resultType="java.lang.Integer">
+		select count(1) from t_sys_menus where father_node =
+		#{fatherNode,jdbcType=INTEGER} and status=1
+	</select>
+
+	<!-- 根据孩子节点的id求出该父节点的孩子数目 -->
+	<select id="countChildrenNumByChild" parameterType="java.lang.Integer"
+		resultType="java.lang.Integer">
+		SELECT COUNT(1) FROM t_sys_menus WHERE status = 1 AND
+		father_node = (
+		SELECT father_node
+		FROM t_sys_menus WHERE status = 1 AND
+		id =
+		#{id,jdbcType=INTEGER} )
+	</select>
+</mapper>

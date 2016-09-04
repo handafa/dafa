@@ -1,0 +1,11 @@
+.modify {
+	background-image: url(/resources/css/images/cog_edit.png) !important;
+}
+
+.add {
+	background-image: url(/resources/css/images/add.gif) !important;
+}
+
+.remove {
+	background-image: url(/resources/css/images/delete.gif) !important;
+}
